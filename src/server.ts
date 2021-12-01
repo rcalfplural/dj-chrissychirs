@@ -20,15 +20,15 @@ export interface ICommandArgs{
 const client = new Client({ intents: [Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_TYPING, Intents.FLAGS.GUILDS ] });
 config();
 client.on("ready", ()=>console.log(">Chrissy Chris esta preparado pra festa começar."))
-client.on("messageCreate", (message: Message)=>{
+client.on("messageCreate", async (message: Message)=>{
     const messageComponents:string[] = message.content.split(" "); // pos[0] = prefix pos[1] command pos[2,3,4...n] = args
     if(!message.author.bot && messageComponents[0].toLowerCase() == "dj"){
         const commandId = messageComponents[1];
-        const command: ICommand | undefined = commands.find((cmd: ICommand)=>{ cmd.id == commandId });
+        const command: ICommand | undefined = commands.find((cmd: ICommand)=> cmd.id == commandId );
         console.log("CMD: "+command);
         console.log("CMDs: "+commands[0].id);
         if(command){
-            command.execute(message, messageComponents, client);
+            command.execute({message, messageComponents, client});
         }
     }
 });
