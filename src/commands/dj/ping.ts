@@ -1,5 +1,5 @@
 import { Message, Permissions } from "discord.js";
-import { ICommand, ICommandArgs } from "../../server";
+import { ICommand, ICommandArgs } from "../../InterfaceDefinitions";
 
 async function execute({message, args, client}: ICommandArgs){
     message.channel.send("Pong: "+String(Date.now()));

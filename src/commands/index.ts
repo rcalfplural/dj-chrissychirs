@@ -1,4 +1,4 @@
-import { ICommand } from "../server";
+import { ICommand } from "../InterfaceDefinitions";
 
 import dj from "./dj";
 
