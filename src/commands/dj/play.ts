@@ -1,6 +1,6 @@
 import { Message, Permissions, VoiceChannel, TextChannel, StageChannel } from "discord.js";
 import { joinVoiceChannel, JoinVoiceChannelOptions, CreateVoiceConnectionOptions, AudioPlayer, AudioPlayerStatus, createAudioPlayer, createAudioResource } from "@discordjs/voice";
-import { ICommand, ICommandArgs, IYoutubeVideoData } from "../../InterfaceDefinitions";
+import { ICommand, ICommandArgs, IYoutubeVideoData, IQueueStruct } from "../../InterfaceDefinitions";
 import { queue } from "../../server";
 import { searchVideo } from "usetube";
 
@@ -40,6 +40,7 @@ async function execute({message, args, client}: ICommandArgs){
                 textChannel: message.channel,
                 voiceChannel: voiceChannel,
                 connection: null,
+                audioPlayer: null,
                 songs: [],
                 volume: 5,
                 playing: false
@@ -48,16 +49,37 @@ async function execute({message, args, client}: ICommandArgs){
 
         const thisQueue = queue.get(message.guild.id);
         const connection = joinVoiceChannel(joinVoiceChannelOptions);
-        
+        const audioPlayer = createAudioPlayer();
+
         thisQueue.songs.push(videoData);
         thisQueue.connection = connection;
-        
+        thisQueue.audioPlayer = audioPlayer;
+
         // Play the song
+        await PlayFunction(message, thisQueue, connection, false);
+        
+    }catch(err){
+        console.error(err);
+        return message.channel.send(":cross: Unexpected error ocorried.");
+    }
+}
+
+// Command object
+const Command: ICommand = {
+    id: "play",
+    longHelp: "Play your favorite song from youtube.",
+    shortHelp: "Play music",
+    permissions: parseInt(`${Permissions.FLAGS.SEND_MESSAGES}`), // Fix this later
+    execute
+}
+
+async function PlayFunction(message: Message, thisQueue: IQueueStruct, connection: any, skipping: boolean){
+    try{
         const video = thisQueue.songs[0];
         const url = `http://youtube.com/watch?v=${video.id}`;
         const stream = ytdl(url, { filter: "audioonly" });
-        const audioPlayer = createAudioPlayer();
         const audioResource = createAudioResource(stream);
+        const { audioPlayer } = thisQueue;  
 
         if(thisQueue.songs.length > 1){
             message.channel.send("E DIGAM ÊÊÊÊÊÊÊÊÊÊ");
@@ -78,19 +100,19 @@ async function execute({message, args, client}: ICommandArgs){
             });
             connection.subscribe(audioPlayer);
             thisQueue.playing = true;
+        }else if(skipping){
+            audioPlayer.stop();
+            audioPlayer.play(audioResource);
+            audioPlayer.on(AudioPlayerStatus.Idle, ()=>{
+                message.channel.send("Finished Playing the song.");
+            });
+            connection.subscribe(audioPlayer);
+            thisQueue.playing = true;   
         }
     }catch(err){
-        return message.channel.send(":cross: Unexpected error ocorried.");
+        console.error(err);
+        return;
     }
 }
-
-// Command object
-const Command: ICommand = {
-    id: "play",
-    longHelp: "Play your favorite song from youtube.",
-    shortHelp: "Play music",
-    permissions: parseInt(`${Permissions.FLAGS.SEND_MESSAGES}`), // Fix this later
-    execute
-}
-
+export { PlayFunction };
 export default Command;

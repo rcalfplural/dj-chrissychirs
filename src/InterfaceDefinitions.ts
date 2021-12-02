@@ -1,3 +1,4 @@
+import { AudioPlayer } from "@discordjs/voice";
 import { Client, Message, TextChannel, VoiceChannel, StageChannel } from "discord.js";
 
 interface ICommand{
@@ -25,6 +26,7 @@ interface IYoutubeVideoData{
 interface IQueueStruct{
     textChannel: TextChannel | any;
     voiceChannel: VoiceChannel | StageChannel;
+    audioPlayer: AudioPlayer;
     connection: any;
     songs: IYoutubeVideoData[];
     volume: Number;
