@@ -1,4 +1,4 @@
-import { Client, Message, Channel, VoiceChannel } from "discord.js";
+import { Client, Message, TextChannel, VoiceChannel, StageChannel } from "discord.js";
 
 interface ICommand{
     execute: Function;
@@ -14,21 +14,22 @@ interface ICommandArgs{
     client: Client;
 }
 
-interface IQueueStruct{
-    textChannel: Channel;
-    voiceChannel: VoiceChannel;
-    connection: any;
-    songs: [];
-    volume: Number;
-    playing: true;
-}
-
 interface IYoutubeVideoData{
     id: string;
     original_title: string;
     artist: string;
-    durations: Number;
+    duration: Number;
     publishedAt: string;
 }
+
+interface IQueueStruct{
+    textChannel: TextChannel | any;
+    voiceChannel: VoiceChannel | StageChannel;
+    connection: any;
+    songs: IYoutubeVideoData[];
+    volume: Number;
+    playing: boolean;
+}
+
 
 export { ICommand, ICommandArgs, IQueueStruct, IYoutubeVideoData };

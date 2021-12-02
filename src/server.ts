@@ -8,6 +8,7 @@ import { ICommand, IQueueStruct } from "./InterfaceDefinitions";
 const queue = new Map<string, IQueueStruct>();
 export { queue };
 
+
 const client = new Client({ intents: [Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_TYPING, Intents.FLAGS.GUILDS ] });
 config();
 client.on("ready", ()=>console.log(">Chrissy Chris esta preparado pra festa começar."))
