@@ -145,8 +145,10 @@ async function PlayFunction(message: Message, thisQueue: IQueueStruct, connectio
             }
 
             console.log("Nao tem mais acabou");
-            message.channel.send("Chrissy Chris tocou demais essa rodada. Quando tiverem prontos pra uma proxima me avisem.");
             StopFunction(thisQueue, message, thisQueue.voiceChannel, message.client, false);
+            return ( async (): Promise<void> => {
+                await message.channel.send("Chrissy Chris tocou demais essa rodada. Quando tiverem prontos pra uma proxima me avisem.")
+            })();
         });
         // in case of errors
         audioPlayer.on("error", (error: AudioPlayerError)=>{
