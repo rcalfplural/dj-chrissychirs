@@ -10,7 +10,7 @@ async function execute({message, args, client}: ICommandArgs){
         if(!thisQueue){
             return message.channel.send("Sem fila maninhoo.");
         }
-    
+        console.log("Queue: "+thisQueue.songs);
         att.setTitle(`Fila atual de ${message.guild.name}`);
         thisQueue.songs.map((song, i) => att.addField(`#${i+1}`, song.original_title));
         
@@ -22,7 +22,7 @@ async function execute({message, args, client}: ICommandArgs){
 }
 const Command: ICommand = {
     id: "queue",
-    longHelp: "Da uma olhada como ta indo a fila do servidor.",
+    longHelp: ":sleeping: Da uma olhada como ta indo a fila do servidor.",
     shortHelp: "ShortHelp",
     permissions: parseInt(`${Permissions.FLAGS.SEND_MESSAGES}`), // Fix this later
     execute

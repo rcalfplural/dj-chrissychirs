@@ -35,7 +35,7 @@ async function execute({message, args, client}: ICommandArgs){
 }
 const Command: ICommand = {
     id: "pause",
-    longHelp: "Se a musica tiver muito quente que você quer se aliviar noo banheiro mas não quer perder a musica, Pause. Tem efeito liga/desliga se usado duas vezes.",
+    longHelp: ":pause_button: Se a musica tiver muito quente que você quer se aliviar noo banheiro mas não quer perder a musica, Pause. Tem efeito liga/desliga se usado duas vezes.",
     shortHelp: "Pause/Unpaused",
     permissions: parseInt(`${Permissions.FLAGS.SEND_MESSAGES}`), // Fix this later
     execute

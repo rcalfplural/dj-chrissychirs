@@ -15,7 +15,7 @@ async function execute({message, args, client}: ICommandArgs){
 }
 const Command: ICommand = {
     id: "help",
-    longHelp: "Pq que eu to tentando ser engraçado com essas descrições?",
+    longHelp: ":sos: Pq que eu to tentando ser engraçado com essas descrições?",
     shortHelp: "HELP",
     permissions: parseInt(`${Permissions.FLAGS.SEND_MESSAGES}`), // Fix this later
     execute

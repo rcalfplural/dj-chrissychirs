@@ -6,7 +6,7 @@ async function execute({message, args, client}: ICommandArgs){
 }
 const Command: ICommand = {
     id: "ping",
-    longHelp: "pong",
+    longHelp: ":ping_pong: pong",
     shortHelp: "ShortHelp",
     permissions: parseInt(`${Permissions.FLAGS.SEND_MESSAGES}`), // Fix this later
     execute

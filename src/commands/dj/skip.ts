@@ -37,7 +37,7 @@ async function execute({message, args, client}: ICommandArgs){
 }
 const Command: ICommand = {
     id: "skip",
-    longHelp: "Musica de anime? Use este comando imediatamente.",
+    longHelp: ":fast_forward: Musica de anime? Use este comando imediatamente.",
     shortHelp: "Skip tha song",
     permissions: parseInt(`${Permissions.FLAGS.SEND_MESSAGES}`), // Fix this later
     execute
