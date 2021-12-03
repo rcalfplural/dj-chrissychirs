@@ -11,13 +11,13 @@ async function execute({message, args, client}: ICommandArgs){
     
         // EnsurE thINgs
         if(!voiceChannel){
-            return message.channel.send("You need to join a voice chat first.");
+            return message.channel.send("Você precisa entrar no chat de voz primeiro.");
         }
         if(voiceChannel != thisQueue.voiceChannel){
-            return message.channel.send("You're not invited to the party :(");
+            return message.channel.send("Você não foi convidado pra festa :(");
         }
         if(!thisQueue){
-            return message.channel.send("There is no queue, mate.");
+            return message.channel.send("Sem fila maninho.");
         }
     
         return await StopFunction(thisQueue, message, voiceChannel, client);
@@ -27,7 +27,7 @@ async function execute({message, args, client}: ICommandArgs){
 }
 const Command: ICommand = {
     id: "stop",
-    longHelp: "Stop the music playing. ",
+    longHelp: "Enxeram de musica ruim. Ou ja sairam e deixaram so você moscando na call e você quer acabar com a solidao? Acabe com a festa.",
     shortHelp: "Skip tha song",
     permissions: parseInt(`${Permissions.FLAGS.SEND_MESSAGES}`), // Fix this later
     execute
@@ -37,7 +37,7 @@ async function StopFunction(thisQueue:IQueueStruct, message: Message, voiceChann
     thisQueue.audioPlayer.stop();
     thisQueue.songs = [];
     thisQueue.playing = false;
-    message.channel.send("DJ Crissy Chris is having a break for now.");
+    message.channel.send("DJ Crissy Chris esta descansando em desampontamento com o encerramento precoce da festa.");
     return voiceChannel.members.map(m => {
         if(m.user.id == client.user.id){
             console.log(`M: ${m.user.id} C: ${client.user.id}`);

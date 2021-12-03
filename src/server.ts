@@ -11,7 +11,10 @@ export { queue };
 
 const client = new Client({ intents: [Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_TYPING, Intents.FLAGS.GUILDS ] });
 config();
-client.on("ready", ()=>console.log(">Chrissy Chris esta preparado pra festa começar."))
+client.on("ready", ()=>{
+    client.user.setActivity({ name: "DJ Chrissy Chriss das parada. DJ help para informações.", type: "LISTENING" });
+    console.log(">Chrissy Chris esta preparado pra festa começar.")
+});
 client.on("messageCreate", async (message: Message)=>{
     const messageComponents:string[] = message.content.split(" "); // pos[0] = prefix pos[1] command pos[2,3,4...n] = args
     if(!message.author.bot && messageComponents[0].toLowerCase() == "dj"){

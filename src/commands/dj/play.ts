@@ -5,6 +5,7 @@ import { queue } from "../../server";
 import { searchVideo } from "usetube";
 
 import * as ytdl from "ytdl-core";
+import { StopFunction } from "./stop";
 
 // Command execution function
 async function execute({message, args, client}: ICommandArgs){
@@ -12,15 +13,18 @@ async function execute({message, args, client}: ICommandArgs){
 
     // Ensure the user is joined a voice chat
     if(!voiceChannel){
-        return message.channel.send("You need to join a voice chat first.");
+        return message.channel.send("Você precisa entrar no chat de voz primeiro.");
     }
 
     // Ensure users permissions
     const permissions = voiceChannel.permissionsFor(client.user);
     if(!permissions.has(Permissions.FLAGS.CONNECT) || !permissions.has(Permissions.FLAGS.SPEAK)){
-        return message.channel.send("Required permissions denied.");
+        return message.channel.send("Permissões necessarias recusadas pela administração.");
     }
 
+    if(args.length == 0 || !args){
+        return message.channel.send("Qual a musica que a galera quer? IOOOOOO");
+    }
     // Get videos by term
     try{
         const term = args.join(" ");
@@ -60,15 +64,15 @@ async function execute({message, args, client}: ICommandArgs){
         
     }catch(err){
         console.error(err);
-        return message.channel.send(":cross: Unexpected error ocorried.");
+        return message.channel.send(":cross: Erro inexperado aconteceu.");
     }
 }
 
 // Command object
 const Command: ICommand = {
     id: "play",
-    longHelp: "Play your favorite song from youtube.",
-    shortHelp: "Play music",
+    longHelp: "Toque suas musicas favoritas do youtube.",
+    shortHelp: "Toca musicas",
     permissions: parseInt(`${Permissions.FLAGS.SEND_MESSAGES}`), // Fix this later
     execute
 }
@@ -81,12 +85,12 @@ async function PlayFunction(message: Message, thisQueue: IQueueStruct, connectio
         const audioResource = createAudioResource(stream);
         const { audioPlayer } = thisQueue;  
 
-        if(thisQueue.songs.length > 1){
+        if(thisQueue.songs.length > 1 && !skipping){
             message.channel.send("E DIGAM ÊÊÊÊÊÊÊÊÊÊ");
             message.channel.send("E DIGAM ÔÔÔÔÔÔÔÔÔÔ");
             message.channel.send("AGORA GRITANDOOO!!!!");
             message.channel.send(`DJ Chrissy Chris tocará pra você em breve ${video.original_title}.`);
-        }else{
+        }else if(thisQueue.songs.length < 2 && thisQueue.songs.length > 0 && !skipping){
             message.channel.send("E DIGAM ÊÊÊÊÊÊÊÊÊÊ");
             message.channel.send("E DIGAM ÔÔÔÔÔÔÔÔÔÔ");
             message.channel.send("AGORA GRITANDOOO!!!!");
@@ -96,7 +100,12 @@ async function PlayFunction(message: Message, thisQueue: IQueueStruct, connectio
         if(!thisQueue.playing){
             audioPlayer.play(audioResource);
             audioPlayer.on(AudioPlayerStatus.Idle, ()=>{
-                message.channel.send("Finished Playing the song.");
+                console.log("next: "+thisQueue.songs[1]);
+                if(thisQueue.songs[1]){
+                    thisQueue.songs.shift();
+                    return (async ()=>{ await PlayFunction(message, thisQueue, connection, true)})();
+                }
+                StopFunction(thisQueue, message, thisQueue.voiceChannel, message.client);
             });
             connection.subscribe(audioPlayer);
             thisQueue.playing = true;
@@ -104,7 +113,7 @@ async function PlayFunction(message: Message, thisQueue: IQueueStruct, connectio
             audioPlayer.stop();
             audioPlayer.play(audioResource);
             audioPlayer.on(AudioPlayerStatus.Idle, ()=>{
-                message.channel.send("Finished Playing the song.");
+                message.channel.send("Chrissy Chris tocou demais essa rodada. Quando tiverem prontos pra uma proxima me avisem.");
             });
             connection.subscribe(audioPlayer);
             thisQueue.playing = true;   

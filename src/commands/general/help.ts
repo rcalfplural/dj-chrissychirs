@@ -6,7 +6,7 @@ import { queue } from "../../server";
 async function execute({message, args, client}: ICommandArgs){
     const pages = [];
     const embed = new MessageEmbed();
-    embed.setTitle("Here is your commands and it's brief explanation");
+    embed.setTitle("Aqui estão as palavrinhas magicas.");
     commands.map((c, i)=>{
         embed.addField(c.id, c.longHelp);
     });
@@ -15,7 +15,7 @@ async function execute({message, args, client}: ICommandArgs){
 }
 const Command: ICommand = {
     id: "help",
-    longHelp: "You used this rn didn't you?",
+    longHelp: "Pq que eu to tentando ser engraçado com essas descrições?",
     shortHelp: "HELP",
     permissions: parseInt(`${Permissions.FLAGS.SEND_MESSAGES}`), // Fix this later
     execute

@@ -7,17 +7,17 @@ async function execute({message, args, client}: ICommandArgs){
     const thisQueue = queue.get(message.guild.id);
 
     if(!thisQueue){
-        return message.channel.send("There is no queue here mate.");
+        return message.channel.send("Sem fila maninhoo.");
     }
 
-    att.setTitle(`${message.guild.name}'s current queue'`);
+    att.setTitle(`Fila atual de ${message.guild.name}`);
     thisQueue.songs.map((song, i) => att.addField(`#${i+1}`, song.original_title));
     
     message.channel.send({ embeds: [att] });
 }
 const Command: ICommand = {
     id: "queue",
-    longHelp: "Check how is the server queue going.",
+    longHelp: "Da uma olhada como ta indo a fila do servidor.",
     shortHelp: "ShortHelp",
     permissions: parseInt(`${Permissions.FLAGS.SEND_MESSAGES}`), // Fix this later
     execute

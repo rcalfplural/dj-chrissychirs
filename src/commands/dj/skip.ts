@@ -11,13 +11,13 @@ async function execute({message, args, client}: ICommandArgs){
     
         // Ensure the user is joined a voice chat
         if(!voiceChannel){
-            return message.channel.send("You need to join a voice chat first.");
+            return message.channel.send("Você precisa entrar no chat de voz primeiro.");
         }
         if(voiceChannel != thisQueue.voiceChannel){
-            return message.channel.send("You're not invited to the party :(");
+            return message.channel.send("Você não foi convidado pra festa :(");
         }
         if(!thisQueue){
-            return message.channel.send("There is no queue, mate.");
+            return message.channel.send("Sem fila maninho.");
         }
     
         thisQueue.songs.shift();
@@ -36,10 +36,16 @@ async function execute({message, args, client}: ICommandArgs){
 }
 const Command: ICommand = {
     id: "skip",
-    longHelp: "Skip the current song playing.",
+    longHelp: "Musica de anime? Use este comando imediatamente.",
     shortHelp: "Skip tha song",
     permissions: parseInt(`${Permissions.FLAGS.SEND_MESSAGES}`), // Fix this later
     execute
 }
+
+async function SkipFunction(){
+
+}
+
+export { SkipFunction };
 
 export default Command;
