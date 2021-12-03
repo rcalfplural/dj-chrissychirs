@@ -3,17 +3,22 @@ import { ICommand, ICommandArgs } from "../../InterfaceDefinitions";
 import { queue } from "../../server";
 
 async function execute({message, args, client}: ICommandArgs){
-    const att = new MessageEmbed();
-    const thisQueue = queue.get(message.guild.id);
-
-    if(!thisQueue){
-        return message.channel.send("Sem fila maninhoo.");
-    }
-
-    att.setTitle(`Fila atual de ${message.guild.name}`);
-    thisQueue.songs.map((song, i) => att.addField(`#${i+1}`, song.original_title));
+    try{
+        const att = new MessageEmbed();
+        const thisQueue = queue.get(message.guild.id);
     
-    message.channel.send({ embeds: [att] });
+        if(!thisQueue){
+            return message.channel.send("Sem fila maninhoo.");
+        }
+    
+        att.setTitle(`Fila atual de ${message.guild.name}`);
+        thisQueue.songs.map((song, i) => att.addField(`#${i+1}`, song.original_title));
+        
+        message.channel.send({ embeds: [att] });
+    }catch(err){
+        console.error(err);
+        return message.channel.send("Ocorreu um erro. Perdão pela incoveniencia");
+    }
 }
 const Command: ICommand = {
     id: "queue",

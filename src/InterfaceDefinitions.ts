@@ -28,7 +28,7 @@ interface IQueueStruct{
     voiceChannel: VoiceChannel | StageChannel;
     audioPlayer: AudioPlayer;
     connection: any;
-    songs: IYoutubeVideoData[];
+    songs: IYoutubeVideoData[] & string[];
     volume: Number;
     playing: boolean;
 }

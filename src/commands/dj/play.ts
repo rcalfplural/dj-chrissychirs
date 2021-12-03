@@ -6,6 +6,7 @@ import { searchVideo } from "usetube";
 
 import * as ytdl from "ytdl-core";
 import { StopFunction } from "./stop";
+import { isYoutubeUrl } from "../../utils/EnsureIsYoutubeUrl";
 
 // Command execution function
 async function execute({message, args, client}: ICommandArgs){
@@ -28,8 +29,9 @@ async function execute({message, args, client}: ICommandArgs){
     // Get videos by term
     try{
         const term = args.join(" ");
-        const { videos } = await searchVideo(term);
-        const videoData: IYoutubeVideoData = videos[0];
+        const isUrl = isYoutubeUrl(term);
+        const { videos } = (isUrl)? { videos: null} : await searchVideo(term);
+        const videoData: IYoutubeVideoData = (videos)? videos[0]:null;
         
         const joinVoiceChannelOptions: JoinVoiceChannelOptions & CreateVoiceConnectionOptions = {
             channelId: voiceChannel.id, 
@@ -39,6 +41,7 @@ async function execute({message, args, client}: ICommandArgs){
         
         ;
         // Queue handling
+        // if there is no queue then we create one
         if(!queue.get(message.guild.id)){
             queue.set(message.guild.id, {
                 textChannel: message.channel,
@@ -55,11 +58,15 @@ async function execute({message, args, client}: ICommandArgs){
         const connection = joinVoiceChannel(joinVoiceChannelOptions);
         const audioPlayer = createAudioPlayer();
 
-        if(!videoData){
+        if(!videoData && !isUrl){
             message.channel.send("Incrivel que por algum motivo estranho esse video nao foi encontrado. :thinking:");
             return message.channel.send("OBS: isso provavelmente é erro da biblioteca. É recomendado usar a url do video desejado retirado da propria plataforma do youtube e tentar novamente `dj play url`")
         }
-        thisQueue.songs.push(videoData);
+        if(!isUrl){
+            thisQueue.songs.push(videoData);
+        }else{
+            thisQueue.songs.push(term);
+        }
         thisQueue.connection = connection;
         thisQueue.audioPlayer = audioPlayer;
 
@@ -84,21 +91,31 @@ const Command: ICommand = {
 async function PlayFunction(message: Message, thisQueue: IQueueStruct, connection: any, skipping: boolean){
     try{
         const video = thisQueue.songs[0];
-        const url = `http://youtube.com/watch?v=${video.id}`;
+        const url = (typeof(video)=='string' && video)?video:`http://youtube.com/watch?v=${video.id}`;
         const stream = ytdl(url, { filter: "audioonly" });
         const audioResource = createAudioResource(stream);
         const { audioPlayer } = thisQueue;  
+
+        const details = (await ytdl.getInfo(url));
+        const { title } = details.videoDetails;
+        thisQueue.songs[0] = <IYoutubeVideoData & string><unknown>{
+            artist: "",
+            duration: Number(details.timestamp),
+            id: details.videoDetails.videoId,
+            publishedAt: details.videoDetails.publishDate,
+            original_title: title
+        };
 
         if(thisQueue.songs.length > 1 && !skipping){
             message.channel.send("E DIGAM ÊÊÊÊÊÊÊÊÊÊ");
             message.channel.send("E DIGAM ÔÔÔÔÔÔÔÔÔÔ");
             message.channel.send("AGORA GRITANDOOO!!!!");
-            message.channel.send(`DJ Chrissy Chris tocará pra você em breve ${video.original_title}.`);
+            message.channel.send(`DJ Chrissy Chris tocará pra você em breve ${title}.`);
         }else if(thisQueue.songs.length < 2 && thisQueue.songs.length > 0 && !skipping){
             message.channel.send("E DIGAM ÊÊÊÊÊÊÊÊÊÊ");
             message.channel.send("E DIGAM ÔÔÔÔÔÔÔÔÔÔ");
             message.channel.send("AGORA GRITANDOOO!!!!");
-            message.channel.send(`DJ Chrissy Chris tocando pra você agora ${video.original_title}.`);
+            message.channel.send(`DJ Chrissy Chris tocando pra você agora ${title}.`);
         }
 
 
