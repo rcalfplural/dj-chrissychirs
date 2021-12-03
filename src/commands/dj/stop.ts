@@ -20,7 +20,7 @@ async function execute({message, args, client}: ICommandArgs){
             return message.channel.send("Sem fila maninho.");
         }
     
-        return await StopFunction(thisQueue, message, voiceChannel, client);
+        return await StopFunction(thisQueue, message, voiceChannel, client, true);
     }catch(err){
         console.error(err);
     }
@@ -33,11 +33,13 @@ const Command: ICommand = {
     execute
 }
 
-async function StopFunction(thisQueue:IQueueStruct, message: Message, voiceChannel: VoiceChannel | StageChannel, client: Client){
+async function StopFunction(thisQueue:IQueueStruct, message: Message, voiceChannel: VoiceChannel | StageChannel, client: Client, feedback: boolean){
     thisQueue.audioPlayer.stop();
     thisQueue.songs = [];
     thisQueue.playing = false;
-    message.channel.send("DJ Crissy Chris esta descansando em desampontamento com o encerramento precoce da festa.");
+    if(feedback){
+        message.channel.send("DJ Crissy Chris esta descansando em desampontamento com o encerramento precoce da festa.");
+    }
     return voiceChannel.members.map(m => {
         if(m.user.id == client.user.id){
             console.log(`M: ${m.user.id} C: ${client.user.id}`);

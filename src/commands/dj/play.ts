@@ -1,5 +1,5 @@
 import { Message, Permissions, VoiceChannel, TextChannel, StageChannel } from "discord.js";
-import { joinVoiceChannel, JoinVoiceChannelOptions, CreateVoiceConnectionOptions, AudioPlayer, AudioPlayerStatus, createAudioPlayer, createAudioResource } from "@discordjs/voice";
+import { joinVoiceChannel, JoinVoiceChannelOptions, CreateVoiceConnectionOptions, AudioPlayer, AudioPlayerStatus, createAudioPlayer, createAudioResource, AudioPlayerError } from "@discordjs/voice";
 import { ICommand, ICommandArgs, IYoutubeVideoData, IQueueStruct } from "../../InterfaceDefinitions";
 import { queue } from "../../server";
 import { searchVideo } from "usetube";
@@ -55,6 +55,10 @@ async function execute({message, args, client}: ICommandArgs){
         const connection = joinVoiceChannel(joinVoiceChannelOptions);
         const audioPlayer = createAudioPlayer();
 
+        if(!videoData){
+            message.channel.send("Incrivel que por algum motivo estranho esse video nao foi encontrado. :thinking:");
+            return message.channel.send("OBS: isso provavelmente é erro da biblioteca. É recomendado usar a url do video desejado retirado da propria plataforma do youtube e tentar novamente `dj play url`")
+        }
         thisQueue.songs.push(videoData);
         thisQueue.connection = connection;
         thisQueue.audioPlayer = audioPlayer;
@@ -96,28 +100,37 @@ async function PlayFunction(message: Message, thisQueue: IQueueStruct, connectio
             message.channel.send("AGORA GRITANDOOO!!!!");
             message.channel.send(`DJ Chrissy Chris tocando pra você agora ${video.original_title}.`);
         }
-        
+
+
+        // If it is the first song or it is just 
         if(!thisQueue.playing){
             audioPlayer.play(audioResource);
-            audioPlayer.on(AudioPlayerStatus.Idle, ()=>{
+            audioPlayer.on(AudioPlayerStatus.Idle, ()=>{ // when it stops it will check if there is another song to play next
                 console.log("next: "+thisQueue.songs[1]);
                 if(thisQueue.songs[1]){
-                    thisQueue.songs.shift();
+                    thisQueue.songs.shift(); // if there is so, it will play right next
                     return (async ()=>{ await PlayFunction(message, thisQueue, connection, true)})();
                 }
-                StopFunction(thisQueue, message, thisQueue.voiceChannel, message.client);
+                StopFunction(thisQueue, message, thisQueue.voiceChannel, message.client, false);
             });
             connection.subscribe(audioPlayer);
             thisQueue.playing = true;
-        }else if(skipping){
-            audioPlayer.stop();
+           
+        }else if(skipping){ // if it is a skip
+            audioPlayer.stop(); // it will stop the stream then play from beggining the new song.
             audioPlayer.play(audioResource);
-            audioPlayer.on(AudioPlayerStatus.Idle, ()=>{
-                message.channel.send("Chrissy Chris tocou demais essa rodada. Quando tiverem prontos pra uma proxima me avisem.");
-            });
             connection.subscribe(audioPlayer);
             thisQueue.playing = true;   
         }
+
+        // When it is done
+        audioPlayer.on(AudioPlayerStatus.Idle, ()=>{
+            message.channel.send("Chrissy Chris tocou demais essa rodada. Quando tiverem prontos pra uma proxima me avisem.");
+        });
+        // in case of errors
+        audioPlayer.on("error", (error: AudioPlayerError)=>{
+            message.channel.send("Aquele erro denovo :sexo");
+        });
     }catch(err){
         console.error(err);
         return;
