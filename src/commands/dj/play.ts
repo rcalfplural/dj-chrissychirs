@@ -125,14 +125,7 @@ async function PlayFunction(message: Message, thisQueue: IQueueStruct, connectio
         // If it is the first song or it is just 
         if(!thisQueue.playing){
             audioPlayer.play(audioResource);
-            audioPlayer.on(AudioPlayerStatus.Idle, ()=>{ // when it stops it will check if there is another song to play next
-                console.log("next: "+thisQueue.songs[1]);
-                if(thisQueue.songs[1]){
-                    thisQueue.songs.shift(); // if there is so, it will play right next
-                    return (async ()=>{ await PlayFunction(message, thisQueue, connection, true)})();
-                }
-                StopFunction(thisQueue, message, thisQueue.voiceChannel, message.client, false);
-            });
+            // RETORNAR AQUI SE DER BOSTA
             connection.subscribe(audioPlayer);
             thisQueue.playing = true;
            
@@ -142,10 +135,18 @@ async function PlayFunction(message: Message, thisQueue: IQueueStruct, connectio
             connection.subscribe(audioPlayer);
             thisQueue.playing = true;   
         }
-
         // When it is done
-        audioPlayer.on(AudioPlayerStatus.Idle, ()=>{
+        audioPlayer.once(AudioPlayerStatus.Idle, ()=>{ // when it stops it will check if there is another song to play next
+            console.log("next: "+thisQueue.songs[1]);
+            if(thisQueue.songs[1]){
+                thisQueue.songs.shift(); // if there is so, it will play right next
+                console.log("Tem mais vamos pra proxima");
+                return (async ()=>{ await PlayFunction(message, thisQueue, connection, true)})();
+            }
+
+            console.log("Nao tem mais acabou");
             message.channel.send("Chrissy Chris tocou demais essa rodada. Quando tiverem prontos pra uma proxima me avisem.");
+            StopFunction(thisQueue, message, thisQueue.voiceChannel, message.client, false);
         });
         // in case of errors
         audioPlayer.on("error", (error: AudioPlayerError)=>{

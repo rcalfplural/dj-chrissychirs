@@ -25,6 +25,7 @@ async function execute({message, args, client}: ICommandArgs){
         const video = thisQueue.songs[0];
     
         if(!video){
+            console.log("Nao tem mais videos");
             return StopFunction(thisQueue, message, voiceChannel, client, false);
         }
         message.channel.send(`DJ Chrissy Chris passando essa pra frente. Agora é ${video.original_title} pra voces rapazes`);
