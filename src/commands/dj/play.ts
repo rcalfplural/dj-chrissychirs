@@ -55,6 +55,9 @@ async function execute({message, args, client}: ICommandArgs){
         }
 
         const thisQueue = queue.get(message.guild.id);
+        if(thisQueue.playing && thisQueue.voiceChannel != voiceChannel){
+            return message.channel.send("DJ Chrissy Chris esta oculpado agora em outra festa. Seja paciente e espere a festa dos outros acabar ou voce junte-se a festa tambem.");
+        }
         const connection = joinVoiceChannel(joinVoiceChannelOptions);
         const audioPlayer = createAudioPlayer();
 
