@@ -40,6 +40,7 @@ async function StopFunction(thisQueue:IQueueStruct, message: Message, voiceChann
     if(feedback){
         message.channel.send("DJ Crissy Chris esta descansando em desampontamento com o encerramento precoce da festa.");
     }
+    thisQueue.voiceChannel = null;
     return voiceChannel.members.map(m => {
         if(m.user.id == client.user.id){
             console.log(`M: ${m.user.id} C: ${client.user.id}`);
