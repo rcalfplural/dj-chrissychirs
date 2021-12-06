@@ -1,4 +1,4 @@
-import { AudioPlayer } from "@discordjs/voice";
+import { AudioPlayer, AudioResource } from "@discordjs/voice";
 import { Client, Message, TextChannel, VoiceChannel, StageChannel } from "discord.js";
 
 interface ICommand{
@@ -21,6 +21,7 @@ interface IYoutubeVideoData{
     artist: string;
     duration: Number;
     publishedAt: string;
+    resource?: AudioResource;
 }
 
 interface IQueueStruct{

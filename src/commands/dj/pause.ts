@@ -26,7 +26,7 @@ async function execute({message, args, client}: ICommandArgs){
             thisQueue.audioPlayer.unpause();
             return message.channel.send("DJ Chrissy Chris ta de volta torando com as paradas musicais.");
         }else if(thisQueue.audioPlayer.state.status == AudioPlayerStatus.Idle){
-            return message.channel.send("DJ Chrissy Chris não ta tocando nada agora não filhote.");
+            return message.channel.send("DJ Chrissy Chris não ta tocando nada agora não.");
         }
     
     }catch(err){

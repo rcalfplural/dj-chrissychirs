@@ -76,7 +76,8 @@ async function execute({message, args, client}: ICommandArgs){
                 duration: Number(details.timestamp),
                 id: details.videoDetails.videoId,
                 publishedAt: details.videoDetails.publishDate,
-                original_title: title
+                original_title: title,
+                resource: null
             });
         }
         thisQueue.connection = connection;
@@ -108,7 +109,7 @@ async function PlayFunction(message: Message, thisQueue: IQueueStruct, connectio
         const audioResource = createAudioResource(stream);
         const { audioPlayer } = thisQueue;  
 
-        // thisQueue.songs[0] = <IYoutubeVideoData & string><unknown>
+        thisQueue.songs[0].resource = audioResource;
 
         if(thisQueue.songs.length > 1 && !skipping){
             message.channel.send("E DIGAM ÊÊÊÊÊÊÊÊÊÊ");
@@ -151,6 +152,8 @@ async function PlayFunction(message: Message, thisQueue: IQueueStruct, connectio
                 await message.channel.send("Chrissy Chris tocou demais essa rodada. Quando tiverem prontos pra uma proxima me avisem.")
             })();
         });
+
+        
         // in case of errors
         audioPlayer.on("error", (error: AudioPlayerError)=>{
             message.channel.send("Aquele erro denovo :sexo");
