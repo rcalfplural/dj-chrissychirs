@@ -6,8 +6,11 @@ import { StopFunction } from "./stop";
 
 async function execute({message, args, client}: ICommandArgs){
     try{
-        const thisQueue = queue.get(message.guild.id);
-        const voiceChannel: VoiceChannel | StageChannel | undefined = message.member.voice.channel;
+        const thisQueue = (message.guild) && queue.get(message.guild.id);
+
+        if(!message.member || !thisQueue) return;
+        
+        const voiceChannel: VoiceChannel | StageChannel | null = message.member.voice.channel;
     
         // Ensure the user is joined a voice chat
         if(!voiceChannel){

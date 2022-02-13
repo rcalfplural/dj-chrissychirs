@@ -4,13 +4,17 @@ import { ICommand, ICommandArgs, IYoutubeVideoData, IQueueStruct } from "../../I
 import { queue } from "../../server";
 import { searchVideo } from "usetube";
 
-import * as ytdl from "ytdl-core";
+import ytdl from "ytdl-core";
 import { StopFunction } from "./stop";
 import { isYoutubeUrl } from "../../utils/EnsureIsYoutubeUrl";
 
 // Command execution function
 async function execute({message, args, client}: ICommandArgs){
-    const voiceChannel: VoiceChannel | StageChannel | undefined = message.member.voice.channel;
+    
+
+    if(!message.member || !client.user) return;
+    
+    const voiceChannel: VoiceChannel | StageChannel | null = message.member.voice.channel;
 
     // Ensure the user is joined a voice chat
     if(!voiceChannel){
@@ -19,6 +23,7 @@ async function execute({message, args, client}: ICommandArgs){
 
     // Ensure users permissions
     const permissions = voiceChannel.permissionsFor(client.user);
+    if(!permissions) return;
     if(!permissions.has(Permissions.FLAGS.CONNECT) || !permissions.has(Permissions.FLAGS.SPEAK)){
         return message.channel.send("Permissões necessarias recusadas pela administração.");
     }
@@ -31,7 +36,7 @@ async function execute({message, args, client}: ICommandArgs){
         const term = args.join(" ");
         const isUrl = isYoutubeUrl(term);
         const { videos } = (isUrl)? { videos: null} : await searchVideo(term);
-        const videoData: IYoutubeVideoData = (videos)? videos[0]:null;
+        const videoData: IYoutubeVideoData | null = (videos)? videos[0]:null;
         
         const joinVoiceChannelOptions: JoinVoiceChannelOptions & CreateVoiceConnectionOptions = {
             channelId: voiceChannel.id, 
@@ -42,6 +47,8 @@ async function execute({message, args, client}: ICommandArgs){
         ;
         // Queue handling
         // if there is no queue then we create one
+        if(!message.guild) return;
+
         if(!queue.get(message.guild.id)){
             queue.set(message.guild.id, {
                 textChannel: message.channel,
@@ -55,6 +62,7 @@ async function execute({message, args, client}: ICommandArgs){
         }
 
         const thisQueue = queue.get(message.guild.id);
+        if(!thisQueue) return;
         if(thisQueue.playing && thisQueue.voiceChannel != voiceChannel){
             return message.channel.send("DJ Chrissy Chris esta oculpado agora em outra festa. Seja paciente e espere a festa dos outros acabar ou voce junte-se a festa tambem.");
         }
@@ -65,7 +73,7 @@ async function execute({message, args, client}: ICommandArgs){
             message.channel.send("Incrivel que por algum motivo estranho esse video nao foi encontrado. :thinking:");
             return message.channel.send("OBS: isso provavelmente é erro da biblioteca. É recomendado usar a url do video desejado retirado da propria plataforma do youtube e tentar novamente `dj play url`")
         }
-        if(!isUrl){
+        if(!isUrl && videoData){
             thisQueue.songs.push(videoData);
         }else{
             
@@ -77,7 +85,7 @@ async function execute({message, args, client}: ICommandArgs){
                 id: details.videoDetails.videoId,
                 publishedAt: details.videoDetails.publishDate,
                 original_title: title,
-                resource: null
+                resource: undefined
             });
         }
         thisQueue.connection = connection;
@@ -112,19 +120,14 @@ async function PlayFunction(message: Message, thisQueue: IQueueStruct, connectio
         thisQueue.songs[0].resource = audioResource;
 
         if(thisQueue.songs.length > 1 && !skipping){
-            message.channel.send("E DIGAM ÊÊÊÊÊÊÊÊÊÊ");
-            message.channel.send("E DIGAM ÔÔÔÔÔÔÔÔÔÔ");
-            message.channel.send("AGORA GRITANDOOO!!!!");
             message.channel.send(`DJ Chrissy Chris tocará pra você em breve ${thisQueue.songs[thisQueue.songs.length-1].original_title}.`);
         }else if(thisQueue.songs.length < 2 && thisQueue.songs.length > 0 && !skipping){
-            message.channel.send("E DIGAM ÊÊÊÊÊÊÊÊÊÊ");
-            message.channel.send("E DIGAM ÔÔÔÔÔÔÔÔÔÔ");
-            message.channel.send("AGORA GRITANDOOO!!!!");
             message.channel.send(`DJ Chrissy Chris tocando pra você agora ${video.original_title}.`);
         }
 
 
         // If it is the first song or it is just 
+        if(!audioPlayer) return;
         if(!thisQueue.playing){
             audioPlayer.play(audioResource);
             // RETORNAR AQUI SE DER BOSTA

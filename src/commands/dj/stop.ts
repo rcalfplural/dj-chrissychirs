@@ -6,13 +6,15 @@ import { PlayFunction } from "./play";
 
 async function execute({message, args, client}: ICommandArgs){
     try{
-        const thisQueue = queue.get(message.guild.id);
-        const voiceChannel: VoiceChannel | StageChannel | undefined = message.member.voice.channel;
+        const thisQueue = (message.guild) && queue.get(message.guild.id);
+        if(!message.member) return;
+        const voiceChannel: VoiceChannel | StageChannel | null = message.member.voice.channel;
     
         // EnsurE thINgs
         if(!voiceChannel){
             return message.channel.send("Você precisa entrar no chat de voz primeiro.");
         }
+        if(!thisQueue) return;
         if(voiceChannel != thisQueue.voiceChannel){
             return message.channel.send("Você não foi convidado pra festa :(");
         }
@@ -34,13 +36,14 @@ const Command: ICommand = {
 }
 
 async function StopFunction(thisQueue:IQueueStruct, message: Message, voiceChannel: VoiceChannel | StageChannel, client: Client, feedback: boolean){
+    if(!thisQueue.audioPlayer) return;
     thisQueue.audioPlayer.stop();
     queue.delete(thisQueue.voiceChannel.guildId);
     if(feedback){
         message.channel.send("DJ Crissy Chris esta descansando em desampontamento com o encerramento precoce da festa.");
     }
     return voiceChannel.members.map(m => {
-        if(m.user.id == client.user.id){
+        if(client.user && m.user.id == client.user.id){
             console.log(`M: ${m.user.id} C: ${client.user.id}`);
             return m.voice.setChannel(null);
         }    

@@ -5,7 +5,10 @@ import { queue } from "../../server";
 async function execute({message, args, client}: ICommandArgs){
     try{
         const att = new MessageEmbed();
-        const thisQueue = queue.get(message.guild.id);
+        const thisQueue = (message.guild) && queue.get(message.guild.id);
+
+        if(!message.member) return;
+        
     
         if(!thisQueue){
             return message.channel.send("Sem fila maninhoo.");
