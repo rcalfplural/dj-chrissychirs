@@ -1,5 +1,5 @@
 import { Message, MessageEmbed, Permissions } from "discord.js";
-import { ICommand, ICommandArgs } from "../../InterfaceDefinitions";
+import { ICommand, ICommandArgs, IYoutubeVideoData, ListNode } from "../../InterfaceDefinitions";
 import { queue } from "../../server"
 
 async function execute({message, args, client}: ICommandArgs){
@@ -9,8 +9,8 @@ async function execute({message, args, client}: ICommandArgs){
         return message.channel.send("Sem fila, irmão.");
     }
     const embed = new MessageEmbed();
-    const song = thisQueue.songs[0];
-    const next = thisQueue.songs[1];
+    const  song = <IYoutubeVideoData>(<ListNode>thisQueue.songsHead).song;
+    const  next = <IYoutubeVideoData>thisQueue.songsHead?.next?.song;
     const nextLabel = (next)? `\nProxima: ${next.original_title}` : ""
     embed.setTitle("Situação atual da nossa festa");
     if(song.resource){

@@ -1,5 +1,5 @@
 import { Message, Permissions, VoiceChannel, StageChannel } from "discord.js";
-import { ICommand, ICommandArgs } from "../../InterfaceDefinitions";
+import { ICommand, ICommandArgs, IYoutubeVideoData } from "../../InterfaceDefinitions";
 import { queue } from "../../server";
 import { PlayFunction } from "./play";
 import { StopFunction } from "./stop";
@@ -23,16 +23,16 @@ async function execute({message, args, client}: ICommandArgs){
             return message.channel.send("Sem fila maninho.");
         }
     
-        thisQueue.songs.shift();
-    
-        const video = thisQueue.songs[0];
+        const video = thisQueue.songsHead?.next;
     
         if(!video){
             console.log("Nao tem mais videos");
             return StopFunction(thisQueue, message, voiceChannel, client, false);
         }
-        message.channel.send(`DJ Chrissy Chris passando essa pra frente. Agora é ${video.original_title} pra voces rapazes`);
+        message.channel.send(`DJ Chrissy Chris passando essa pra frente. Agora é ${(<IYoutubeVideoData>video.song).original_title} pra voces rapazes`);
     
+        thisQueue.songsHead = video;
+
         return await PlayFunction(message, thisQueue, thisQueue.connection, true);
     }catch(err){
         console.error(err);
