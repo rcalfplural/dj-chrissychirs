@@ -1,6 +1,7 @@
 import { Message, Permissions, MessageEmbed } from "discord.js";
-import { ICommand, ICommandArgs } from "../../InterfaceDefinitions";
+import { ICommand, ICommandArgs, IYoutubeVideoData } from "../../InterfaceDefinitions";
 import { queue } from "../../server";
+import { List2Array, ListPrint } from "../../utils/Lists";
 
 async function execute({message, args, client}: ICommandArgs){
     try{
@@ -13,9 +14,14 @@ async function execute({message, args, client}: ICommandArgs){
         if(!thisQueue){
             return message.channel.send("Sem fila maninhoo.");
         }
-        console.log("Queue: "+thisQueue.songs);
         att.setTitle(`Fila atual de ${message.guild.name}`);
-        thisQueue.songs.map((song, i) => att.addField(`#${i+1}`, song.original_title));
+        const songsArray = List2Array(thisQueue);
+        console.log("NEXT: ", thisQueue.songsHead?.next);
+        console.log("Queue: "+songsArray);
+        songsArray.map((song, i) => {
+            if(!song) return;
+            att.addField(`#${i+1}`, (<IYoutubeVideoData>song?.song).original_title);
+        });
         
         message.channel.send({ embeds: [att] });
     }catch(err){

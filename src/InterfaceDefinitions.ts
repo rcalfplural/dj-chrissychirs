@@ -29,10 +29,14 @@ interface IQueueStruct{
     voiceChannel: VoiceChannel | StageChannel;
     audioPlayer: AudioPlayer | null;
     connection: any;
-    songs: IYoutubeVideoData[] & string[];
+    songsHead: ListNode | null;
     volume: Number;
     playing: boolean;
 }
 
+interface ListNode{
+    song: IYoutubeVideoData | string;
+    next: ListNode | null;
+};
 
-export { ICommand, ICommandArgs, IQueueStruct, IYoutubeVideoData };
+export { ICommand, ICommandArgs, IQueueStruct, IYoutubeVideoData, ListNode };
