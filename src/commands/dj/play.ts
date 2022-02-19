@@ -117,6 +117,12 @@ const Command: ICommand = {
 
 async function PlayFunction(message: Message, thisQueue: IQueueStruct, connection: any, skipping: boolean){
     try{
+        console.log("HEADER: ",thisQueue.songsHead);
+        if(!thisQueue.songsHead) {
+            await message.channel.send("A playlist acaba aqui. DJ Chrissy Chris se divertiu e espera mais momentos de diversão para nos.");
+            await StopFunction(thisQueue, message, thisQueue.voiceChannel, message.client, false);
+            return;
+        }
         const video = <IYoutubeVideoData>thisQueue.songsHead?.song;
         const url = `http://youtube.com/watch?v=${video.id}`;
         const stream = ytdl(url, { filter: "audioonly" });
@@ -172,15 +178,12 @@ async function PlayFunction(message: Message, thisQueue: IQueueStruct, connectio
         //     })();
         // });
 
-        audioPlayer.addListener("stateChange", (oldState: AudioPlayerState, newState: AudioPlayerState)=>{
+        audioPlayer.addListener("stateChange", async (oldState: AudioPlayerState, newState: AudioPlayerState)=>{
             if(newState.status == AudioPlayerStatus.Idle){ // Music stopped
                 // check if there is next
-                if(thisQueue.songsHead?.next){
-                    thisQueue.songsHead = thisQueue.songsHead.next;
-                    console.log("NEXT: ", thisQueue.songsHead);
-                    return (async ()=>{ await PlayFunction(message, thisQueue, connection, true)})();
-                }
-                message.channel.send("MUSICA CABO");
+                console.log("Acabou de acabar: ", thisQueue.songsHead);
+                thisQueue.songsHead = <ListNode>thisQueue.songsHead?.next;
+                await PlayFunction(message, thisQueue, connection, true);
                 return;
             }
                         

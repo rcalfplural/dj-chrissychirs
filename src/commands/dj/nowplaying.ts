@@ -27,7 +27,12 @@ async function execute({message, args, client}: ICommandArgs){
  * @returns A HH:MM:SS format string on the given seconds params.
  */
 function SecondsToFormatedTime(seconds: number) : string{
-    return `${new Date(seconds * 1000).toISOString().substr(11,8)}`;
+    try{
+        return `${new Date(seconds * 1000).toISOString().substr(11,8)}`;
+    }catch(err){
+        console.error(err);
+        return "--.--.--";
+    }
 }
 
 const Command: ICommand = {
