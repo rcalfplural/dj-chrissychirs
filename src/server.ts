@@ -19,7 +19,7 @@ client.on("ready", ()=>{
 });
 client.on("messageCreate", async (message: Message)=>{
     const messageComponents:string[] = message.content.split(" "); // pos[0] = prefix pos[1] command pos[2,3,4...n] = args
-    if(!message.author.bot && messageComponents[0].toLowerCase() == "dev"){
+    if(!message.author.bot && messageComponents[0].toLowerCase() == "dj"){
         const commandId = messageComponents[1];
         const command: ICommand | undefined = commands.find((cmd: ICommand)=> cmd.id == commandId );
         console.log("CMD: "+command);
