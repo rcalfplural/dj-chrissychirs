@@ -10,7 +10,7 @@ async function execute({message, args, client}: ICommandArgs){
     commands.map((c, i)=>{
         embed.addField(c.id, c.longHelp);
     });
-
+    embed.setFooter("v0.0.2 | Powered by BruhCrusaderCity", "https://avatars.githubusercontent.com/u/53186400?v=4");
     return message.channel.send({ embeds: [embed] });
 }
 const Command: ICommand = {
