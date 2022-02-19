@@ -1,5 +1,5 @@
 import { Client, Intents, Message, Permissions } from "discord.js";
-import { config } from "dotenv";
+// import { config } from "dotenv";
 
 import * as fs from "fs";
 import commands from "./commands";
@@ -10,7 +10,7 @@ export { queue };
 
 
 const client = new Client({ intents: [Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MESSAGE_TYPING, Intents.FLAGS.GUILDS ] });
-config();
+// config();
 client.on("ready", ()=>{
     if(client.user){
         client.user.setActivity({ name: "DJ Chrissy Chriss das parada. DJ help para informações.", type: "LISTENING" });
@@ -30,4 +30,4 @@ client.on("messageCreate", async (message: Message)=>{
     }
 });
 
-client.login(process.env.TOKEN_DEV);
+client.login(process.env.TOKEN);
