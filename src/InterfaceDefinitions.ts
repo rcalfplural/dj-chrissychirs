@@ -1,5 +1,6 @@
 import { AudioPlayer, AudioResource } from "@discordjs/voice";
 import { Client, Message, TextChannel, VoiceChannel, StageChannel } from "discord.js";
+import { InfoData } from "play-dl";
 
 interface ICommand{
     execute: Function;
@@ -30,12 +31,11 @@ interface IQueueStruct{
     audioPlayer: AudioPlayer | null;
     connection: any;
     songsHead: ListNode | null;
-    volume: Number;
     playing: boolean;
 }
 
 interface ListNode{
-    song: IYoutubeVideoData | string;
+    song: InfoData;
     next: ListNode | null;
 };
 
