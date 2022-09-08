@@ -1,199 +1,79 @@
-import { Message, Permissions, VoiceChannel, TextChannel, StageChannel } from "discord.js";
-import { joinVoiceChannel, JoinVoiceChannelOptions, CreateVoiceConnectionOptions, AudioPlayer, AudioPlayerStatus, createAudioPlayer, createAudioResource, AudioPlayerError, AudioPlayerState, AudioPlayerIdleState } from "@discordjs/voice";
-import { ICommand, ICommandArgs, IYoutubeVideoData, IQueueStruct, ListNode } from "../../InterfaceDefinitions";
-import { queue } from "../../server";
+import { ICommand, ICommandArgs } from "../../InterfaceDefinitions";
+import { Permissions } from "discord.js";
+import { AudioPlayerStatus, createAudioPlayer, createAudioResource, getVoiceConnection, joinVoiceChannel, NoSubscriberBehavior } from "@discordjs/voice";
+import play from "play-dl";
 import { searchVideo } from "usetube";
-
-import ytdl from "ytdl-core";
-import { StopFunction } from "./stop";
 import { isYoutubeUrl } from "../../utils/EnsureIsYoutubeUrl";
-import { ListGetAt, ListLength, ListPush } from "../../utils/Lists";
+import { queue } from "../../server";
 
-// Command execution function
-async function execute({message, args, client}: ICommandArgs){
+async function GetVideoUrl(term: string){
+    const res = await searchVideo(term);
     
+    return `https://youtube.com/watch?v=${res.videos[0].id}`;
+}
 
-    if(!message.member || !client.user) return;
-    
-    const voiceChannel: VoiceChannel | StageChannel | null = message.member.voice.channel;
-
-    // Ensure the user is joined a voice chat
-    if(!voiceChannel){
-        return message.channel.send("Você precisa entrar no chat de voz primeiro.");
-    }
-
-    // Ensure users permissions
-    const permissions = voiceChannel.permissionsFor(client.user);
-    if(!permissions) return;
-    if(!permissions.has(Permissions.FLAGS.CONNECT) || !permissions.has(Permissions.FLAGS.SPEAK)){
-        return message.channel.send("Permissões necessarias recusadas pela administração.");
-    }
-
-    if(args.length == 0 || !args){
-        return message.channel.send("Qual a musica que a galera quer?");
-    }
-    // Get videos by term
+async function execute({ message, args }:ICommandArgs){
     try{
         const term = args.join(" ");
-        const isUrl = isYoutubeUrl(term);
-        const { videos } = (isUrl)? { videos: null} : await searchVideo(term);
-        const videoData: IYoutubeVideoData | null = (videos)? videos[0]:null;
+
+        const videoUrl = (isYoutubeUrl(term))?term:await GetVideoUrl(term);
+
         
-        const joinVoiceChannelOptions: JoinVoiceChannelOptions & CreateVoiceConnectionOptions = {
-            channelId: voiceChannel.id, 
-            guildId: voiceChannel.guildId,
-            adapterCreator: voiceChannel.guild.voiceAdapterCreator
-        };
+        if(!message.member || !message.guild) return;
         
-        ;
-        // Queue handling
-        // if there is no queue then we create one
-        if(!message.guild) return;
-
-        if(!queue.get(message.guild.id)){
-            queue.set(message.guild.id, {
-                textChannel: message.channel,
-                voiceChannel: voiceChannel,
-                connection: null,
-                audioPlayer: null,
-                songsHead: null,
-                volume: 15,
-                playing: false
-            });
-        }
-
-        const thisQueue = queue.get(message.guild.id);
-        if(!thisQueue) return;
-        if(thisQueue.playing && thisQueue.voiceChannel != voiceChannel){
-            return message.channel.send("DJ Chrissy Chris esta oculpado agora em outra festa. Seja paciente e espere a festa dos outros acabar ou voce junte-se a festa tambem.");
-        }
-        const connection = joinVoiceChannel(joinVoiceChannelOptions);
-        const audioPlayer = createAudioPlayer();
-
-        if(!videoData && !isUrl){
-            message.channel.send("Incrivel que por algum motivo estranho esse video nao foi encontrado. :thinking:");
-            return message.channel.send("OBS: isso provavelmente é erro da biblioteca. É recomendado usar a url do video desejado retirado da propria plataforma do youtube e tentar novamente `dj play url`")
-        }
-        if(!isUrl && videoData){
-            const song: ListNode = { song: videoData, next: null };
-            
-            ListPush(thisQueue, song);
-        }else{
-            
-            const details = (await ytdl.getInfo(term));
-            const { title } = details.videoDetails;
-            ListPush(thisQueue, {
-                song: {
-                    artist: "",
-                    duration: Number(details.timestamp),
-                    id: details.videoDetails.videoId,
-                    publishedAt: details.videoDetails.publishDate,
-                    original_title: title,
-                    resource: undefined
-                },
-                next: null
-            });
-        }
-        thisQueue.connection = connection;
-        thisQueue.audioPlayer = audioPlayer;
-
-        // Play the song
-        await PlayFunction(message, thisQueue, connection, false);
+        if(!message.member.voice.channel) return message.reply("Cannot join voice channel.");
         
-    }catch(err){
-        console.error(err);
-        return message.channel.send(":cross: Erro inexperado aconteceu.");
-    }
-}
+        const q = queue.get(message.guild.id);
+        const serverQueue = (q)? q: queue.set(message.guild?.id, {
+                                        audioPlayer: null,
+                                        playing: false,
+                                        textChannel: message.channel,
+                                        voiceChannel: message.member?.voice.channel,
+                                        connection: null,
+                                        volume: 1,
+                                        songsHead: null
+                                    });
 
-// Command object
-const Command: ICommand = {
-    id: "play",
-    longHelp: ":arrow_forward: Toque suas musicas favoritas do youtube.",
-    shortHelp: "Toca musicas",
-    permissions: parseInt(`${Permissions.FLAGS.SEND_MESSAGES}`), // Fix this later
-    execute
-}
-
-async function PlayFunction(message: Message, thisQueue: IQueueStruct, connection: any, skipping: boolean){
-    try{
-        console.log("HEADER: ",thisQueue.songsHead);
-        if(!thisQueue.songsHead) {
-            await message.channel.send("A playlist acaba aqui. DJ Chrissy Chris se divertiu e espera mais momentos de diversão para nos.");
-            await StopFunction(thisQueue, message, thisQueue.voiceChannel, message.client, false);
-            return;
-        }
-        const video = <IYoutubeVideoData>thisQueue.songsHead?.song;
-        const url = `http://youtube.com/watch?v=${video.id}`;
-        const stream = ytdl(url, { filter: "audioonly" });
-        const audioResource = createAudioResource(stream);
-        const { audioPlayer } = thisQueue;  
-
-        video.resource = audioResource;
-        const queueLength: number = ListLength(thisQueue);
-        console.log("QUEUE LENGTH: ", queueLength);
-        if(queueLength > 1 && !skipping){
-            const nextNode = ListGetAt(thisQueue, queueLength-1); 
-            const nextTitle = (nextNode)? (<IYoutubeVideoData>nextNode.song).original_title:"PROBLEJKLFJSKLJLKJDKALSJKL";
-            message.channel.send(`DJ Chrissy Chris tocará pra você em breve ${nextTitle}.`);
-        }else if(queueLength < 2 && queueLength > 0 && !skipping){
-            message.channel.send(`DJ Chrissy Chris tocando pra você agora ${video.original_title}.`);
-        }
-
-
-        // If it is the first song or it is just 
-        if(!audioPlayer) return;
-        if(!thisQueue.playing){
-            audioPlayer.play(audioResource);
-            // RETORNAR AQUI SE DER BOSTA
-            connection.subscribe(audioPlayer);
-            thisQueue.playing = true;
-            // if(thisQueue.audioPlayer){
-            //     thisQueue.audioPlayer.state.status = AudioPlayerStatus.Playing;
-            // }
-        }else if(skipping){ // if it is a skip
-            audioPlayer.stop(); // it will stop the stream then play from beggining the new song.
-            audioPlayer.play(audioResource);
-            connection.subscribe(audioPlayer);
-            thisQueue.playing = true;  
-            if(thisQueue.audioPlayer){
-                thisQueue.audioPlayer.state.status = AudioPlayerStatus.Playing;
-            } 
-        }
-        // When it is done
-        // audioPlayer.once(AudioPlayerStatus.Idle, ()=>{ // when it stops it will check if there is another song to play next
-        //     thisQueue.playing = false;
-        //     console.log("next: "+thisQueue.songsHead?.next);
-        //     if(thisQueue.songsHead?.next){
-        //         //thisQueue.songs.shift(); // if there is so, it will play right next
-        //         thisQueue.songsHead = thisQueue.songsHead.next;
-        //         console.log("Tem mais vamos pra proxima");
-        //         return (async ()=>{ await PlayFunction(message, thisQueue, connection, true)})();
-        //     }
-
-        //     console.log("Nao tem mais acabou");
-        //     StopFunction(thisQueue, message, thisQueue.voiceChannel, message.client, false);
-        //     return ( async (): Promise<void> => {
-        //         await message.channel.send("Chrissy Chris tocou demais essa rodada. Quando tiverem prontos pra uma proxima me avisem.")
-        //     })();
-        // });
-
-        audioPlayer.addListener("stateChange", async (oldState: AudioPlayerState, newState: AudioPlayerState)=>{
-            if(newState.status == AudioPlayerStatus.Idle){ // Music stopped
-                // check if there is next
-                console.log("Acabou de acabar: ", thisQueue.songsHead);
-                thisQueue.songsHead = <ListNode>thisQueue.songsHead?.next;
-                await PlayFunction(message, thisQueue, connection, true);
-                return;
-            }
-                        
+        const connection = joinVoiceChannel({
+            channelId: message.member.voice.channel?.id,
+            guildId: message.guild.id,
+            adapterCreator: message.guild.voiceAdapterCreator
         });
 
-        // in case of errors
-        audioPlayer.once("error", (error: AudioPlayerError)=>{
-            console.error(error);
-            message.channel.send("Aquele erro denovo :sexo");
-            return;
+        console.log(videoUrl);
+        const videoInfo = await play.video_info(videoUrl);
+        console.log(videoInfo.video_details);
+        const stream = await play.stream_from_info(videoInfo);
+        const resource = createAudioResource(stream.stream, {
+            inputType: stream.type
+        });
+
+        const player = createAudioPlayer({
+            behaviors: {
+                noSubscriber: NoSubscriberBehavior.Play
+            }
+        });
+
+        // verificar se o player ja está tocando
+            // caso não esteja -> inicar reprodução
+            // caso contrario -> adicionar musica ao fim da fila 
+        player.play(resource);
+        connection.subscribe(player);
+
+        // Eventos de troca de estado do player
+        player.on<"stateChange">("stateChange", (oldState, newState)=>{
+            console.log("Changed from ", oldState.status);
+            console.log("Changed to ", newState.status);
+
+            // acabou essa 
+            if(oldState.status == AudioPlayerStatus.Playing && newState.status == AudioPlayerStatus.Idle){
+                console.log("Acabou essa musica");
+                // Checar se existe uma proxima musica na fila
+                    // se tiver tocar a proxima
+                    //se nao finalizar fila, desconectar do canal e emitir mensagem de encerramento
+                connection.disconnect();
+                player.stop();    
+            }
         });
     }catch(err){
         console.error(err);
@@ -201,6 +81,12 @@ async function PlayFunction(message: Message, thisQueue: IQueueStruct, connectio
     }
 }
 
+const command: ICommand = {
+    id: "play",
+    execute,
+    shortHelp: "FODASE",
+    longHelp: "FODASE 2",
+    permissions: parseInt(`${Permissions.FLAGS.SEND_MESSAGES}`), // Fix this later
+};
 
-export { PlayFunction };
-export default Command;
+export default command;
