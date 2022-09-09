@@ -5,6 +5,7 @@ import play, { InfoData } from "play-dl";
 import { searchVideo } from "usetube";
 import { isYoutubeUrl } from "../../utils/EnsureIsYoutubeUrl";
 import { queue } from "../../server";
+import { GetServerQueue } from "../../utils/DiscordUtils";
 
 export async function GetVideoUrl(term: string){
     const res = await searchVideo(term);
@@ -99,7 +100,7 @@ export async function PlaySong(serverQueue: IQueueStruct, message: Message, conn
     serverQueue.playing = true;
 
     // Eventos de troca de estado do player
-    player.on<"stateChange">("stateChange", (oldState, newState)=>{
+    player.on<"stateChange">("stateChange", async (oldState, newState)=>{
         console.log("Changed from ", oldState.status);
         console.log("Changed to ", newState.status);
         
@@ -124,11 +125,12 @@ export async function PlaySong(serverQueue: IQueueStruct, message: Message, conn
             if(!serverQueue.songsHead?.next){
                 console.log("Acabou a lista");
                 message.channel.send("Dj Chrissy Chris tocou todas hoje.");
+                serverQueue.songsHead = null;
                 connection.disconnect();
             }else{
                 console.log("Vamos para a proxima");
                 MoveQueueNext(serverQueue);
-                return PlaySong(serverQueue, message, connection);
+                return await PlaySong(serverQueue, message, connection);
             }
         }
 
@@ -154,16 +156,8 @@ async function execute({ message, args }:ICommandArgs){
         
         if(!message.member.voice.channel) return message.reply("Cannot join voice channel.");
         
-        const q = queue.get(message.guild.id);
-        const serverQueue = (q)? q: queue.set(message.guild?.id, {
-                                        audioPlayer: null,
-                                        playing: false,
-                                        textChannel: message.channel,
-                                        voiceChannel: message.member?.voice.channel,
-                                        connection: null,
-                                        songsHead: null
-                                    }).get(message.guild.id);
-
+       
+        const serverQueue = await GetServerQueue(message);
 
         if(!serverQueue) return console.log("Failed to create queue in server ", message.guild.id);
 

@@ -2,7 +2,9 @@ import { ICommand, ICommandArgs } from "../../InterfaceDefinitions";
 import { Permissions } from "discord.js";
 import { queue } from "../../server";
 import { MoveQueueNext, PlaySong } from "./play";
+import { GetServerQueue } from "../../utils/DiscordUtils";
 
+const DEBUG = true;
 
 async function execute({ message }:ICommandArgs){
     try{
@@ -10,17 +12,9 @@ async function execute({ message }:ICommandArgs){
         
         if(!message.member.voice.channel) return message.reply("Cannot join voice channel.");
         
-        const q = queue.get(message.guild.id);
-        const serverQueue = (q)? q: queue.set(message.guild?.id, {
-                                        audioPlayer: null,
-                                        playing: false,
-                                        textChannel: message.channel,
-                                        voiceChannel: message.member?.voice.channel,
-                                        connection: null,
-                                        songsHead: null
-                                    }).get(message.guild.id);
-
-
+        if(DEBUG) return message.channel.send(":warning: Este comando nao ta funcional ainda. Não use :warning:")
+       
+        const serverQueue = await GetServerQueue(message);
         if(!serverQueue) return console.log("Failed to create queue in server ", message.guild.id);
 
         console.log("Pulando essa musica agora.");

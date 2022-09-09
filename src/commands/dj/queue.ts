@@ -1,30 +1,39 @@
 import { Message, Permissions, MessageEmbed } from "discord.js";
 import { ICommand, ICommandArgs, IYoutubeVideoData } from "../../InterfaceDefinitions";
 import { queue } from "../../server";
+import { GetServerQueue } from "../../utils/DiscordUtils";
 import { List2Array, ListPrint } from "../../utils/Lists";
 
 async function execute({message, args, client}: ICommandArgs){
     try{
-        const att = new MessageEmbed();
-        const thisQueue = (message.guild) && queue.get(message.guild.id);
 
-        if(!message.member) return;
+        if(!message.guild) throw new Error("Falha ao obter o id da guild.");
+
+        const att = new MessageEmbed();
+        att.setColor("DARK_AQUA");
+        att.setTitle("Fila");
+
+        if(!message.member || !message.guild) return;
         
+        if(!message.member.voice.channel) return message.reply("Cannot join voice channel.");
+        
+        const serverQueue = await GetServerQueue(message);
+
+
+        if(!serverQueue) return console.log("Failed to create queue in server ", message.guild.id);
+
+        let current = serverQueue.songsHead, pos = 1;
     
-        if(!thisQueue){
-            return message.channel.send("Sem fila maninhoo.");
+        if(!current) return message.channel.send("Fila vazia");
+
+        while(current){
+            att.addField(`${pos}ª musica`, `${current.song.video_details.title}`);
+            current = current.next;
+            pos++;
         }
-        att.setTitle(`Fila atual de ${message.guild.name}`);
-        const songsArray = List2Array(thisQueue);
-        console.log("NEXT: ", thisQueue.songsHead?.next);
-        console.log("Queue: "+songsArray);
-        songsArray.map((song, i) => {
-            if(!song) return;
-            att.addField(`#${i+1}`, (<IYoutubeVideoData>song?.song).original_title);
-        });
-        
-        message.channel.send({ embeds: [att] });
-    }catch(err){
+        return message.channel.send({ embeds: [att] });
+    }
+    catch(err){
         console.error(err);
         return message.channel.send("Ocorreu um erro. Perdão pela incoveniencia");
     }

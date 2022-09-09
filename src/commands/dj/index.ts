@@ -8,4 +8,4 @@ import skip from "./skip";
 // import pause from "./pause.old";
 import nowplaying from "./nowplaying";
 
-export default <ICommand[]>[ ping, play, queue, nowplaying ];
+export default <ICommand[]>[ ping, play, skip, queue, nowplaying ];
