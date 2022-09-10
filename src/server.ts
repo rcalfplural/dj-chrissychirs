@@ -13,7 +13,7 @@ const client = new Client({ intents: [Intents.FLAGS.GUILD_VOICE_STATES, Intents.
 config();
 client.on("ready", ()=>{
     if(client.user){
-        client.user.setActivity({ name: "DJ Chrissy Chriss das parada. DJ help para informações.", type: "LISTENING" });
+        client.user.setActivity({ name: "DJ Chrissy Chriss das parada. DJ help para informações. | DJ help", type: "LISTENING" });
     }
     console.log(">Chrissy Chris esta preparado pra festa começar.")
 });

@@ -30,6 +30,7 @@ interface IQueueStruct{
     voiceChannel: VoiceChannel | StageChannel;
     audioPlayer: AudioPlayer | null;
     connection: any;
+    res: AudioResource | null;
     songsHead: ListNode | null;
     playing: boolean;
 }

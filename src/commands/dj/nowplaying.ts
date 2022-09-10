@@ -1,34 +1,48 @@
 import { Message, MessageEmbed, Permissions } from "discord.js";
 import { ICommand, ICommandArgs, IYoutubeVideoData, ListNode } from "../../InterfaceDefinitions";
 import { queue } from "../../server"
+import { GetServerName, GetServerQueue } from "../../utils/DiscordUtils";
 
 async function execute({message, args, client}: ICommandArgs){
-    const thisQueue = (message.guild) && queue.get(message.guild.id);
+    try{
+        const serverQueue = await GetServerQueue(message);
 
-    if(!thisQueue){
-        return message.channel.send("Sem fila, irmão.");
+        if(!serverQueue) return message.reply("Nenhua fila foi encontrada nesse server.");
+
+        const song = serverQueue.songsHead?.song;
+        const resource = serverQueue.res;
+
+        if(!song || !resource) return message.reply("Não tem nada tocando agora");
+
+        const embed = new MessageEmbed();
+
+        embed.setAuthor("DJ Chrissy Chris está tocando agora em "+await GetServerName(message));
+        embed.setTitle(String(song.video_details.title));
+        embed.setDescription(`Tocada/Duração: ${GetFormatedTime(resource.playbackDuration)}/${song.video_details.durationRaw}\nPorcentagem tocada: ${Math.round(((resource.playbackDuration/1000)*100)/song.video_details.durationInSec)}%`);
+
+        return message.channel.send({ embeds: [embed] });
+    }catch(err){
+        console.error(err);
+        return message.channel.send("Erro interno ocorreu.");
     }
-    const embed = new MessageEmbed();
-    const  song = <IYoutubeVideoData>(<ListNode>thisQueue.songsHead).song;
-    const  next = <IYoutubeVideoData>thisQueue.songsHead?.next?.song;
-    const nextLabel = (next)? `\nProxima: ${next.original_title}` : ""
-    embed.setTitle("Situação atual da nossa festa");
-    if(song.resource){
-        embed.addField(song.original_title, `Duração: ${SecondsToFormatedTime(<number>song.duration)} \nTocado: ${SecondsToFormatedTime(song.resource.playbackDuration / 1000)}\nFaltam: ${SecondsToFormatedTime(<number>song.duration - (song.resource.playbackDuration/1000))}${nextLabel}`);
-    }
-    
-    const status = (thisQueue.audioPlayer != null)?thisQueue.audioPlayer.state.status:'unknown';
-    return message.channel.send({ content: "Player status: "+String(status),  embeds: [embed] });
 }
 
 /**
  * 
- * @param seconds : number. Given in seconds
+ * @param miliseconds : number. Given in miliseconds
  * @returns A HH:MM:SS format string on the given seconds params.
  */
-function SecondsToFormatedTime(seconds: number) : string{
+function GetFormatedTime(miliseconds: number) : string{
     try{
-        return `${new Date(seconds * 1000).toISOString().substr(11,8)}`;
+        const date = new Date(miliseconds);
+        const formatedDigit = (n:number)=>n.toLocaleString("en-US", { minimumIntegerDigits: 2, useGrouping: false });
+        let formated:string = "";
+        if(miliseconds/1000 > 3599){
+            formated = `${formatedDigit(date.getHours())}:${formatedDigit(date.getMinutes())}:${formatedDigit(date.getSeconds())}`;
+        }else{
+            formated = `${formatedDigit(date.getMinutes())}:${formatedDigit(date.getSeconds())}`;
+        }
+        return formated;
     }catch(err){
         console.error(err);
         return "--.--.--";

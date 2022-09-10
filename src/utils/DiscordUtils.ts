@@ -17,8 +17,16 @@ export async function GetServerQueue(message: Message):Promise<IQueueStruct | un
                                     textChannel: message.channel,
                                     voiceChannel: message.member?.voice.channel,
                                     connection: null,
-                                    songsHead: null
+                                    songsHead: null,
+                                    res: null
                                 }).get(message.guild.id);
                                 
     return serverQueue;
+}
+
+export async function GetServerName(message: Message): Promise<string>{
+    if(!message.guild) return "";
+    const serverName: string = message.guild?.name;
+
+    return serverName;
 }

@@ -4,7 +4,7 @@ import { queue } from "../../server";
 import { MoveQueueNext, PlaySong } from "./play";
 import { GetServerQueue } from "../../utils/DiscordUtils";
 
-const DEBUG = true;
+const DEBUG = false;
 
 async function execute({ message }:ICommandArgs){
     try{
@@ -19,9 +19,9 @@ async function execute({ message }:ICommandArgs){
 
         console.log("Pulando essa musica agora.");
 
+        if(!serverQueue.songsHead?.next) return message.channel.send("Não tem proxima");
         serverQueue.audioPlayer?.stop(true);
         serverQueue.playing = false;
-        if(!serverQueue.songsHead?.next) return message.channel.send("Não tem proxima");
         MoveQueueNext(serverQueue);
         return await PlaySong(serverQueue, message, serverQueue.connection);
         

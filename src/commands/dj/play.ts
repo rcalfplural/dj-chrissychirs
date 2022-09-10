@@ -73,7 +73,7 @@ export function MoveQueueNext(queue: IQueueStruct){
 
 }
 
-export async function PlaySong(serverQueue: IQueueStruct, message: Message, connection: VoiceConnection){
+export async function PlaySong(serverQueue: IQueueStruct, message: Message, connection: VoiceConnection, feedback: boolean = false){
     const videoInfo = serverQueue.songsHead?.song;
     if(!videoInfo) throw new Error("Invalid video info.");
 
@@ -98,6 +98,7 @@ export async function PlaySong(serverQueue: IQueueStruct, message: Message, conn
     player.play(resource);
     connection.subscribe(player);
     serverQueue.playing = true;
+    serverQueue.res = resource;
 
     // Eventos de troca de estado do player
     player.on<"stateChange">("stateChange", async (oldState, newState)=>{
@@ -124,7 +125,7 @@ export async function PlaySong(serverQueue: IQueueStruct, message: Message, conn
             
             if(!serverQueue.songsHead?.next){
                 console.log("Acabou a lista");
-                message.channel.send("Dj Chrissy Chris tocou todas hoje.");
+                if(feedback) message.channel.send("Dj Chrissy Chris tocou todas hoje.");
                 serverQueue.songsHead = null;
                 connection.disconnect();
             }else{
@@ -174,7 +175,7 @@ async function execute({ message, args }:ICommandArgs){
         GiveFeedback(message, videoInfo);
         PrintQueueInformation(serverQueue);
 
-        await PlaySong(serverQueue, message, connection);
+        await PlaySong(serverQueue, message, connection, true);
 
     }catch(err){
         console.error(err);
