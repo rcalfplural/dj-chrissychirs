@@ -24,9 +24,8 @@ client.on("messageCreate", async (message: Message)=>{
         const command: ICommand | undefined = commands.find((cmd: ICommand)=> cmd.id == commandId );
         console.log("CMD: "+command);
         console.log("CMDs: "+commands[0].id);
-        if(command){
-            command.execute({message, args: messageComponents.slice(2), client});
-        }
+        if(!command) return;
+        command.execute({message, args: messageComponents.slice(2), client});
     }
 });
 

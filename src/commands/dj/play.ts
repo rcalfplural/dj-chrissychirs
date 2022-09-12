@@ -6,6 +6,7 @@ import { searchVideo } from "usetube";
 import { isYoutubeUrl } from "../../utils/EnsureIsYoutubeUrl";
 import { queue } from "../../server";
 import { GetServerQueue } from "../../utils/DiscordUtils";
+import { EmbedConstructor } from "../../utils/BotStandardsUtils";
 
 export async function GetVideoUrl(term: string){
     const res = await searchVideo(term);
@@ -14,16 +15,13 @@ export async function GetVideoUrl(term: string){
 }
 
 export async function GiveFeedback(message: Message, current: InfoData){
-    const embed = new MessageEmbed();
+    const embed = EmbedConstructor({ title: "DJ Chrissy Chris adicionou para a fila: ", hasAuthor: true, hasFooter: true });
     const { title, durationRaw } = current.video_details;
 
     if(!title) return;
 
-    embed.setTitle("DJ Chrissy Chris adicionou para a fila: ");
     embed.addField("Titulo", title);
     embed.addField("Duração", durationRaw);
-    embed.setColor("DARK_AQUA");
-    embed.setAuthor("DJ Chrissy Chris");
 
     return message.channel.send({ embeds: [embed] });
 }

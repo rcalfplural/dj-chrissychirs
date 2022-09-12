@@ -1,7 +1,8 @@
 import { Message, Permissions, MessageEmbed } from "discord.js";
 import { ICommand, ICommandArgs, IYoutubeVideoData } from "../../InterfaceDefinitions";
 import { queue } from "../../server";
-import { GetServerQueue } from "../../utils/DiscordUtils";
+import { EmbedConstructor } from "../../utils/BotStandardsUtils";
+import { GetServerName, GetServerQueue } from "../../utils/DiscordUtils";
 import { List2Array, ListPrint } from "../../utils/Lists";
 
 async function execute({message, args, client}: ICommandArgs){
@@ -9,9 +10,7 @@ async function execute({message, args, client}: ICommandArgs){
 
         if(!message.guild) throw new Error("Falha ao obter o id da guild.");
 
-        const att = new MessageEmbed();
-        att.setColor("DARK_AQUA");
-        att.setTitle("Fila");
+        const att = EmbedConstructor({ title: `Fila em ${await GetServerName(message)}`, hasFooter: false, hasAuthor: false });
 
         if(!message.member || !message.guild) return;
         
