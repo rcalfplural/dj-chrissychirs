@@ -1,17 +1,17 @@
 import { ICommand, ICommandArgs, IQueueStruct } from "../../InterfaceDefinitions";
 import { Message, MessageEmbed, Permissions } from "discord.js";
-import { AudioPlayerState, AudioPlayerStatus, createAudioPlayer, createAudioResource, getVoiceConnection, joinVoiceChannel, NoSubscriberBehavior, VoiceConnection } from "@discordjs/voice";
+import { AudioPlayerStatus, createAudioPlayer, createAudioResource, joinVoiceChannel, NoSubscriberBehavior, VoiceConnection } from "@discordjs/voice";
 import play, { InfoData } from "play-dl";
-import { searchVideo } from "usetube";
 import { isYoutubeUrl } from "../../utils/EnsureIsYoutubeUrl";
-import { queue } from "../../server";
 import { GetServerQueue } from "../../utils/DiscordUtils";
 import { EmbedConstructor } from "../../utils/BotStandardsUtils";
 
 export async function GetVideoUrl(term: string){
-    const res = await searchVideo(term);
+    const res = await play.search(term, {
+        source: { youtube: "video" }
+    });
     
-    return `https://youtube.com/watch?v=${res.videos[0].id}`;
+    return `https://youtube.com/watch?v=${res[0].id}`;
 }
 
 export async function GiveFeedback(message: Message, current: InfoData){

@@ -1,9 +1,7 @@
-import { Message, Permissions, MessageEmbed } from "discord.js";
-import { ICommand, ICommandArgs, IYoutubeVideoData } from "../../InterfaceDefinitions";
-import { queue } from "../../server";
+import { Permissions } from "discord.js";
+import { ICommand, ICommandArgs } from "../../InterfaceDefinitions";
 import { EmbedConstructor } from "../../utils/BotStandardsUtils";
 import { GetServerName, GetServerQueue } from "../../utils/DiscordUtils";
-import { List2Array, ListPrint } from "../../utils/Lists";
 
 async function execute({message, args, client}: ICommandArgs){
     try{

@@ -1,6 +1,5 @@
-import { Message, MessageEmbed, Permissions } from "discord.js";
-import { ICommand, ICommandArgs, IYoutubeVideoData, ListNode } from "../../InterfaceDefinitions";
-import { queue } from "../../server"
+import { Permissions } from "discord.js";
+import { ICommand, ICommandArgs } from "../../InterfaceDefinitions";
 import { EmbedConstructor } from "../../utils/BotStandardsUtils";
 import { GetServerName, GetServerQueue } from "../../utils/DiscordUtils";
 

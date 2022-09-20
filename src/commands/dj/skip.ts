@@ -1,6 +1,5 @@
 import { ICommand, ICommandArgs } from "../../InterfaceDefinitions";
 import { Permissions } from "discord.js";
-import { queue } from "../../server";
 import { MoveQueueNext, PlaySong } from "./play";
 import { GetServerQueue } from "../../utils/DiscordUtils";
 
